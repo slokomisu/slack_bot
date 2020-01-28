@@ -119,6 +119,10 @@ def commands():
             'function': sticker_me,
             "description": "uses text after command to query giphey for stickers"
         },
+        'summon': {
+            'function': summon,
+            "description": "summons a user to the current channel"
+        },
         'table flip': {
             'function': table_flip,
             "description": "when you gotta flip a table"
@@ -354,7 +358,7 @@ def my_karma(_query, slack_event):
         'karma_scores',
         {'user': {'S': '<@' + slack_event['user'] + '>'}}
     )['Item']['karma']['N']
-    
+
 def praise(query, slack_event):
     """
     query - query str
@@ -553,6 +557,28 @@ def youtube_me(query, _slack_event):
     """
 
     return request.youtube_search(query)
+
+def summon(query, slack_event):
+    data = {
+        'users': [slack_event["user"]],
+        'channel': slack_event["channel"]
+     }
+
+    response = json.loads(request.submit_slack_request(data, 'conversations.invite'))
+
+    if response["ok"] == 'true':
+        return 'Get in here {}!'.format(slack_event["user"])
+    elif response["ok"] == 'false':
+        if response["error"] == 'user_not_found':
+            return "I'm not sure who {} is".format(slack_event["user"])
+        elif response['error'] == 'already_in_channel':
+            return "{} is already in here!".format(slack_event["user"])
+        else:
+            return 'some other error'
+    else:
+        return response
+
+
 
 def no_result_found_response():
     """

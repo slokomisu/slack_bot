@@ -249,7 +249,6 @@ def spotify_search(query):
     return None
 
 
-
 def return_status():
     """
     We always want to return status OK to the gateway API
